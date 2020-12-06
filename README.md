@@ -7,4 +7,4 @@ I will add support for 60 fps and sound somewhen later
 
 <h3>This requires FFMpeg</h3>
 You have to put <a href="https://github.com/BtbN/FFmpeg-Builds/releases">ffmpeg gpl</a> to your Documents Folder
-<img src="https://ibb.co/59ntbHJ"></img>
+<img src="https://i.ibb.co/QcCzywx/image.png"></img>
