@@ -17,64 +17,66 @@ import work.mgnet.tasrecorder.ScreenshotQueue.WorkImage;
 
 public class ScreenshotUtils {
 
-	public static final File screenshotDir = new File(FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + "/ffmpeg");
-	
+	public static final File screenshotDir = new File(
+			FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + "/ffmpeg");
+
 	public static int width;
 	public static int height;
-	
+
 	// Colors of the Image. 3 = RGB, 4 = RGBA
-	public static final int bpp = 3;
+	public static int bpp = 4;
 	// Colors of the Image 2. GL_RGB, GL_RGBA
-	public static final int glbpp = GL11.GL_RGB;
-	
+	public static int glbpp = GL11.GL_RGBA;
+
 	public static String getScreenshotName() {
 		TASRecorder.currentFrame++;
 		int t = TASRecorder.currentFrame;
- 		String tInStr = t + "";
- 		
- 		int toAdd = 6 - tInStr.length();
- 		String finalStr = "";
- 		
- 		for (int i = 0; i < toAdd; i++) {
-				finalStr = finalStr + "0";
-			}
- 		
- 		finalStr = finalStr + t;
- 		
- 		String name = "img" + finalStr + ".jpg";
- 		return name;
+		String tInStr = t + "";
+
+		int toAdd = 6 - tInStr.length();
+		String finalStr = "";
+
+		for (int i = 0; i < toAdd; i++) {
+			finalStr = finalStr + "0";
+		}
+
+		finalStr = finalStr + t;
+
+		String name = "img" + finalStr + ".jpg";
+		return name;
 	}
-	
+
 	public static ByteBuffer takeScreenshot() {
 		if (width == 0 || height == 0) {
 			width = Display.getWidth();
 			height = Display.getHeight();
 		}
-		
-		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp); 
+
+		ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
 		GL11.glReadPixels(0, 0, width, height, glbpp, GL11.GL_UNSIGNED_BYTE, buffer);
 		return buffer;
 	}
-	
+
 	public static void saveScreenshot(WorkImage img) {
 		ByteBuffer buffer = img.buffer;
 		File file = new File(screenshotDir, img.name);
 		String format = "JPG";
-		BufferedImage image = new BufferedImage(ScreenshotUtils.width, ScreenshotUtils.height, BufferedImage.TYPE_INT_RGB);
-		for(int x = 0; x < ScreenshotUtils.width; x++) 
-		{
-		    for(int y = 0; y < ScreenshotUtils.height; y++)
-		    {
-		        int i = (x + (ScreenshotUtils.width * y)) * ScreenshotUtils.bpp;
-		        int r = buffer.get(i) & 0xFF;
-		        int g = buffer.get(i + 1) & 0xFF;
-		        int b = buffer.get(i + 2) & 0xFF;
-		        image.setRGB(x, ScreenshotUtils.height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
-		    }
+		BufferedImage image = new BufferedImage(ScreenshotUtils.width, ScreenshotUtils.height,
+				BufferedImage.TYPE_INT_RGB);
+		for (int x = 0; x < ScreenshotUtils.width; x++) {
+			for (int y = 0; y < ScreenshotUtils.height; y++) {
+				int i = (x + (ScreenshotUtils.width * y)) * ScreenshotUtils.bpp;
+				int r = buffer.get(i) & 0xFF;
+				int g = buffer.get(i + 1) & 0xFF;
+				int b = buffer.get(i + 2) & 0xFF;
+				image.setRGB(x, ScreenshotUtils.height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+			}
 		}
 		try {
-		    ImageIO.write(image, format, file);
-		} catch (IOException e) { e.printStackTrace(); }
+			ImageIO.write(image, format, file);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 }

@@ -6,8 +6,6 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import work.mgnet.tasrecorder.utils.ScreenshotUtils;
-
 public class ScreenshotQueue {
 
 	public static class WorkImage {
@@ -24,13 +22,7 @@ public class ScreenshotQueue {
 	public static Timer scheduler = new Timer();
 	
 	public static Thread workerThread;
-	public static TimerTask workerTask = new TimerTask() {
-		
-		@Override
-		public void run() {
-	 		ScreenshotQueue.toRecord.add(ScreenshotUtils.getScreenshotName());
-		}
-	};
+	public static TimerTask workerTask;
 	
 	public static Queue<WorkImage> toConvert = new LinkedList<WorkImage>();
 	public static Queue<String> toRecord = new LinkedList<String>();

@@ -45,8 +45,7 @@ public class GenerateCommand extends CommandBase {
 		if (TASRecorder.isRecording) {
 			sender.sendMessage(new TextComponentString("You are recording"));
 		} else {
-			FFMPEGBuilder.build();
-			sender.sendMessage(new TextComponentString("Wait..."));
+			FFMPEGBuilder.build(sender);
 		}
 	}
 	
