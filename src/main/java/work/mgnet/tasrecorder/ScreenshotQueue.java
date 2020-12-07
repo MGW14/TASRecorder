@@ -22,8 +22,11 @@ public class ScreenshotQueue {
 	public static Timer scheduler = new Timer();
 	
 	public static Thread workerThread;
+	public static Thread compressThread;
 	public static TimerTask workerTask;
 	
 	public static Queue<WorkImage> toConvert = new LinkedList<WorkImage>();
 	public static Queue<String> toRecord = new LinkedList<String>();
+	public static Queue<String> toCompress = new LinkedList<String>();
+	
 }

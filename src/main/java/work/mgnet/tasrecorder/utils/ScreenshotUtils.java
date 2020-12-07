@@ -2,18 +2,20 @@ package work.mgnet.tasrecorder.utils;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
-import javax.imageio.ImageIO;
 import javax.swing.filechooser.FileSystemView;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
-import work.mgnet.tasrecorder.TASRecorder;
+import work.mgnet.tasrecorder.ScreenshotQueue;
 import work.mgnet.tasrecorder.ScreenshotQueue.WorkImage;
+import work.mgnet.tasrecorder.TASRecorder;
 
 public class ScreenshotUtils {
 
@@ -42,7 +44,7 @@ public class ScreenshotUtils {
 
 		finalStr = finalStr + t;
 
-		String name = "img" + finalStr + ".jpg";
+		String name = "img" + finalStr + ".uncompressed";
 		return name;
 	}
 
@@ -57,12 +59,24 @@ public class ScreenshotUtils {
 		return buffer;
 	}
 
-	public static void saveScreenshot(WorkImage img) {
+	public static void saveScreenshot(WorkImage img) throws IOException {
 		ByteBuffer buffer = img.buffer;
 		File file = new File(screenshotDir, img.name);
-		String format = "JPG";
-		BufferedImage image = new BufferedImage(ScreenshotUtils.width, ScreenshotUtils.height,
-				BufferedImage.TYPE_INT_RGB);
+		FileOutputStream oos = new FileOutputStream(file);
+		FileChannel fc = oos.getChannel();
+		
+		fc.write(buffer);
+		
+		fc.close();
+		oos.close();
+	
+		synchronized (ScreenshotQueue.toCompress) {
+			ScreenshotQueue.toCompress.add(img.name);
+		}
+	}
+	
+	public static BufferedImage compressScreenshot(ByteBuffer buffer) {
+		BufferedImage image = new BufferedImage(ScreenshotUtils.width, ScreenshotUtils.height, BufferedImage.TYPE_INT_RGB);
 		for (int x = 0; x < ScreenshotUtils.width; x++) {
 			for (int y = 0; y < ScreenshotUtils.height; y++) {
 				int i = (x + (ScreenshotUtils.width * y)) * ScreenshotUtils.bpp;
@@ -72,11 +86,7 @@ public class ScreenshotUtils {
 				image.setRGB(x, ScreenshotUtils.height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
 			}
 		}
-		try {
-			ImageIO.write(image, format, file);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		return image;
 	}
 
 }

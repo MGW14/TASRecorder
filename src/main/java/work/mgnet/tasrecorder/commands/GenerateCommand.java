@@ -1,5 +1,6 @@
 package work.mgnet.tasrecorder.commands;
 
+import java.io.File;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -12,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import work.mgnet.tasrecorder.TASRecorder;
 import work.mgnet.tasrecorder.ffmpeg.FFMPEGBuilder;
+import work.mgnet.tasrecorder.utils.ScreenshotUtils;
 
 public class GenerateCommand extends CommandBase {
 
@@ -45,6 +47,14 @@ public class GenerateCommand extends CommandBase {
 		if (TASRecorder.isRecording) {
 			sender.sendMessage(new TextComponentString("You are recording"));
 		} else {
+			
+			for (File f : ScreenshotUtils.screenshotDir.listFiles()) {
+				if (f.getName().endsWith(".uncompressed")) {
+					sender.sendMessage(new TextComponentString("You cannot generate your TAS yet, the images still need to be compressed. Press escape and wait!"));
+					return;
+				}
+			}
+			
 			FFMPEGBuilder.build(sender);
 		}
 	}

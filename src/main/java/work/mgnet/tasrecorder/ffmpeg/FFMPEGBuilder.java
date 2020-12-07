@@ -22,7 +22,7 @@ public class FFMPEGBuilder {
 
 	public static final String ffmpegDir = FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + "/ffmpeg/bin";
 	public static int quality = 5;
-	public static final int framerate = 30;
+	public static final int framerate = 60;
 	
 	public static void build(ICommandSender sender) {
 		

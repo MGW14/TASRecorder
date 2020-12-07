@@ -1,9 +1,8 @@
 # TASRecorder
 The TASRecorder Mod is an addition to the TASTickratechanger by <a href="https://github.com/ScribbleLP/TASTickratechanger">@ScribbleLP</a>.
-It records in 30 fps depending on your Tickrate and then speeds it up without the use of an Video Editing software.
+It records at 60 fps depending on your Tickrate and then speeds it up without the use of an Video Editing software.
 
-It currently only supports 30 fps recordings and can slow down the game a bit when using shaders (or being on a low end pc).
-I will add support for 60 fps and sound somewhen later
+I will have to add Sound later
 
 <h3>This requires FFMpeg</h3>
 You have to put <a href="https://github.com/BtbN/FFmpeg-Builds/releases">ffmpeg gpl</a> to your Documents Folder
@@ -16,6 +15,9 @@ Quality Settings basically just set the bitrate of ffmpeg. I recommend Medium fo
 
 Then type in /record to start the recording.
 It will not record the Main Menu, but will automatically start after you join a world again.
+
+While you are in the TAS, press ESC a few times, and all the images will be compressed.
+That means, you will not have 1.5tb of images after an all advancements run (it's actually "only" 350 gb but still) and it will compress it down to... uhhh 15 gb? idunno.
 
 Type /record again to stop recording.
 
