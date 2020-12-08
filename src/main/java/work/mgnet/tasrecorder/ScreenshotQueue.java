@@ -6,27 +6,28 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.jcodec.api.SequenceEncoder;
+
 public class ScreenshotQueue {
 
 	public static class WorkImage {
 		public ByteBuffer buffer;
-		public String name;
+		public int frame;
 		
-		public WorkImage(ByteBuffer buffer, String name) {
+		public WorkImage(ByteBuffer buffer, int frame) {
 			this.buffer = buffer;
-			this.name = name;
+			this.frame = frame;
 		}
 		
 	}
 	
 	public static Timer scheduler = new Timer();
+	public static Thread workedThread;
+	public static SequenceEncoder encoder;
 	
-	public static Thread workerThread;
-	public static Thread compressThread;
 	public static TimerTask workerTask;
 	
 	public static Queue<WorkImage> toConvert = new LinkedList<WorkImage>();
-	public static Queue<String> toRecord = new LinkedList<String>();
-	public static Queue<String> toCompress = new LinkedList<String>();
+	public static Queue<Integer> toRecord = new LinkedList<Integer>();
 	
 }

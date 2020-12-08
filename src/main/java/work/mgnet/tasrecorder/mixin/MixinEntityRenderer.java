@@ -17,12 +17,10 @@ public class MixinEntityRenderer {
 	
 	@Inject(method = "updateCameraAndRender", at = @At(value="TAIL"), cancellable = true)
 	public void redoupdateCameraAndRender(CallbackInfo ci) {
-		synchronized (ScreenshotQueue.toRecord) {
-			if (!ScreenshotQueue.toRecord.isEmpty()) {
-				String name = ScreenshotQueue.toRecord.poll();
-				ByteBuffer bytes = ScreenshotUtils.takeScreenshot();
-				ScreenshotQueue.toConvert.add(new WorkImage(bytes, name));
-			}
+		if (!ScreenshotQueue.toRecord.isEmpty()) {
+			int frame = ScreenshotQueue.toRecord.poll();
+			ByteBuffer bytes = ScreenshotUtils.takeScreenshot();
+			ScreenshotQueue.toConvert.add(new WorkImage(bytes, frame));
 		}
 	 }
 	

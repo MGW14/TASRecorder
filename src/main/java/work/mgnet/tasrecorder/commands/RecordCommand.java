@@ -1,18 +1,17 @@
 package work.mgnet.tasrecorder.commands;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.imageio.ImageIO;
-
-import org.lwjgl.BufferUtils;
+import org.jcodec.api.SequenceEncoder;
+import org.jcodec.common.Codec;
+import org.jcodec.common.Format;
+import org.jcodec.common.io.NIOUtils;
+import org.jcodec.common.model.Rational;
 
 import com.google.common.collect.ImmutableList;
 
@@ -63,25 +62,39 @@ public class RecordCommand extends CommandBase {
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if (TASRecorder.isRecording) {
 			TASRecorder.isRecording = false;
-			ScreenshotQueue.workerThread.interrupt();
+			ScreenshotQueue.workedThread.interrupt();
 			ScreenshotQueue.scheduler.cancel();
+			try {
+				ScreenshotQueue.encoder.finish();
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			sender.sendMessage(new TextComponentString("You have stopped the recording"));
 		} else {
 			if (ScreenshotUtils.screenshotDir.exists()) {
 				for (File file : ScreenshotUtils.screenshotDir.listFiles()) {
 					file.delete();
 				}
-			} else sender.sendMessage(new TextComponentString("You haven't installed FFMpeg yet"));
-			ScreenshotQueue.workerThread = new Thread(new Runnable() {
+			} else sender.sendMessage(new TextComponentString("You haven't installed FFmpeg yet"));
+			try {
+				ScreenshotQueue.encoder = new SequenceEncoder(NIOUtils.writableChannel(new File(ScreenshotUtils.screenshotDir, "output.mp4")), Rational.R(60, 1), Format.MOV, Codec.H264, null);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			ScreenshotQueue.scheduler = new Timer();
+			ScreenshotQueue.workedThread = new Thread(new Runnable() {
 				
 				@Override
 				public void run() {
 					while (true) {
 						synchronized (ScreenshotQueue.toConvert) {
-							if (!ScreenshotQueue.toConvert.isEmpty()) {
-								WorkImage img = ScreenshotQueue.toConvert.poll();
+							if (ScreenshotQueue.toConvert.size() != 0) {
+								final WorkImage job = ScreenshotQueue.toConvert.poll();
 								try {
-									ScreenshotUtils.saveScreenshot(img);
+									ScreenshotUtils.saveScreenshot(job);
 								} catch (IOException e) {
 									e.printStackTrace();
 								}
@@ -90,80 +103,20 @@ public class RecordCommand extends CommandBase {
 					}
 				}
 			});
-			ScreenshotQueue.compressThread = new Thread(new Runnable() {
-				
-				@Override
-				public void run() {
-					while (true) {
-						synchronized (ScreenshotQueue.toCompress) {
-							boolean afk = false;
-							try {
-								afk = !allowed.contains(Minecraft.getMinecraft().currentScreen.getClass().getSimpleName().toLowerCase());
-							} catch (Exception e) {
-								
-							}
-							while (afk && ScreenshotQueue.toCompress.size() != 0) {
-								
-								int max = 0;
-								List<Thread> threads = new ArrayList<>();
-								for (int i = 0; i < ScreenshotQueue.toCompress.size(); i++) {
-									if (max > 60) break; 
-									final String file = ScreenshotQueue.toCompress.poll();
-									Thread t = new Thread(new Runnable() {
-										
-										@Override
-										public void run() {
-											try {
-												File uncompressedFile = new File(ScreenshotUtils.screenshotDir, file);
-												File jpgFile = new File(ScreenshotUtils.screenshotDir, file.replaceFirst("uncompressed", "jpg"));
-												
-												FileInputStream fs = new FileInputStream(uncompressedFile);
-												FileChannel fc = fs.getChannel();
-												
-												ByteBuffer buffer = BufferUtils.createByteBuffer(ScreenshotUtils.width * ScreenshotUtils.height * ScreenshotUtils.bpp);
-												fc.read(buffer);
-												
-												ImageIO.write(ScreenshotUtils.compressScreenshot(buffer), "JPG", jpgFile);
-												
-												fs.close();
-												fc.close();
-												
-												uncompressedFile.delete();
-												
-											} catch (Exception e) {
-												e.printStackTrace();
-											}
-										}
-									});
-									t.start();
-									threads.add(t);
-									
-									max++;
-								}
-								
-								while (threads.size() != 0) {
-									for (Thread th : new ArrayList<Thread>(threads)) {
-										if (!th.isAlive()) {
-											threads.remove(th);
-											break;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			});
-			ScreenshotQueue.workerThread.start();
-			ScreenshotQueue.compressThread.start();
-			ScreenshotQueue.scheduler = new Timer();
+			ScreenshotQueue.workedThread.start();
 			ScreenshotQueue.workerTask = new TimerTask() {
 				
 				@Override
 				public void run() {
 					
-					if (Minecraft.getMinecraft().currentScreen == null) ScreenshotQueue.toRecord.add(ScreenshotUtils.getScreenshotName());
-					else if (allowed.contains(Minecraft.getMinecraft().currentScreen.getClass().getSimpleName().toLowerCase())) ScreenshotQueue.toRecord.add(ScreenshotUtils.getScreenshotName());
+					if (Minecraft.getMinecraft().currentScreen == null) {
+						ScreenshotQueue.toRecord.add(TASRecorder.currentFrame);
+						TASRecorder.currentFrame++;
+					}
+					else if (allowed.contains(Minecraft.getMinecraft().currentScreen.getClass().getSimpleName().toLowerCase())) {
+						ScreenshotQueue.toRecord.add(TASRecorder.currentFrame);
+						TASRecorder.currentFrame++;
+					}
 				}
 			};
 			ScreenshotQueue.scheduler.scheduleAtFixedRate(ScreenshotQueue.workerTask, 0L, Math.round(1000 / (TickrateChanger.TICKS_PER_SECOND * 3)));
