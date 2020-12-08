@@ -68,9 +68,9 @@ dependencies {
         exclude module: 'commons-io'
         exclude module: 'log4j-core'
     }
-    compile files("run/mods/TickrateChanger.jar")
-    compile files("jcodec-0.2.5")
-    compile files("jcodec-javase-0.2.5")
+    compile files("libs/TickrateChanger.jar")
+    compile files("libs/jcodec-0.2.5")
+    compile files("libs/jcodec-javase-0.2.5")
 }
 
 processResources {

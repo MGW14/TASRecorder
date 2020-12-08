@@ -9,7 +9,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import net.minecraft.client.renderer.EntityRenderer;
 import work.mgnet.tasrecorder.ScreenshotQueue;
-import work.mgnet.tasrecorder.ScreenshotQueue.WorkImage;
 import work.mgnet.tasrecorder.utils.ScreenshotUtils;
 
 @Mixin(EntityRenderer.class)
@@ -17,10 +16,10 @@ public class MixinEntityRenderer {
 	
 	@Inject(method = "updateCameraAndRender", at = @At(value="TAIL"), cancellable = true)
 	public void redoupdateCameraAndRender(CallbackInfo ci) {
-		if (!ScreenshotQueue.toRecord.isEmpty()) {
-			int frame = ScreenshotQueue.toRecord.poll();
+		if (ScreenshotQueue.toRecord > 0) {
+			ScreenshotQueue.toRecord--;
 			ByteBuffer bytes = ScreenshotUtils.takeScreenshot();
-			ScreenshotQueue.toConvert.add(new WorkImage(bytes, frame));
+			ScreenshotQueue.toConvert.add(bytes);
 		}
 	 }
 	

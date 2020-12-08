@@ -3,6 +3,8 @@ package work.mgnet.tasrecorder.commands;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,7 +17,7 @@ import org.jcodec.common.model.Rational;
 
 import com.google.common.collect.ImmutableList;
 
-import me.guichaguri.tastickratechanger.TickrateChanger;
+import me.guichaguri.tastickratechanger.api.TickrateAPI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -24,7 +26,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import work.mgnet.tasrecorder.ScreenshotQueue;
-import work.mgnet.tasrecorder.ScreenshotQueue.WorkImage;
 import work.mgnet.tasrecorder.TASRecorder;
 import work.mgnet.tasrecorder.utils.ScreenshotUtils;
 
@@ -62,23 +63,49 @@ public class RecordCommand extends CommandBase {
 	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
 		if (TASRecorder.isRecording) {
 			TASRecorder.isRecording = false;
-			ScreenshotQueue.workedThread.interrupt();
-			ScreenshotQueue.scheduler.cancel();
-			try {
-				ScreenshotQueue.encoder.finish();
+			new Thread(new Runnable() {
 				
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			sender.sendMessage(new TextComponentString("You have stopped the recording"));
-		} else {
-			if (ScreenshotUtils.screenshotDir.exists()) {
-				for (File file : ScreenshotUtils.screenshotDir.listFiles()) {
-					file.delete();
+				@Override
+				public void run() {
+					ScreenshotQueue.scheduler.cancel();
+					while (!ScreenshotQueue.toConvert.isEmpty() || ScreenshotQueue.toRecord != 0) {
+						
+					}
+					ScreenshotQueue.workedThread.interrupt();
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
+					try {
+						ScreenshotQueue.encoder.finish();
+						sender.sendMessage(new TextComponentString("Your file has been successfully saved. Please restart your MC if you want to make another recording. (dunno why but that's just how it is)"));
+					} catch (IOException e) {
+						e.printStackTrace();
+						sender.sendMessage(new TextComponentString("§cError. This is why you don't use pre-releases. :( i dunno myself why this error occurs."));
+					}
+					ScreenshotQueue.encoder = null;
+					ScreenshotQueue.scheduler = null;
+					ScreenshotQueue.toConvert = new LinkedList<ByteBuffer>();
+					ScreenshotQueue.toRecord = 0;
+					ScreenshotQueue.workedThread = null;
+					ScreenshotQueue.workerTask = null;
 				}
-			} else sender.sendMessage(new TextComponentString("You haven't installed FFmpeg yet"));
+			}).start();
+			sender.sendMessage(new TextComponentString("You have stopped the recording. Your Video is saved under Videos"));
+			TickrateAPI.changeTickrate(20.0f);
+		} else {
+			File movie = new File(ScreenshotUtils.videosFolder, "TAS-Exported.mp4");
+			if (ScreenshotUtils.videosFolder.exists()) {
+				if (movie.exists()) {
+					movie.delete();
+					sender.sendMessage(new TextComponentString("Your old TAS has been deleted. Please rerun the command"));
+					return;
+				}
+			} else ScreenshotUtils.videosFolder.mkdir();
+			TickrateAPI.changeTickrate(1.0f);
 			try {
-				ScreenshotQueue.encoder = new SequenceEncoder(NIOUtils.writableChannel(new File(ScreenshotUtils.screenshotDir, "output.mp4")), Rational.R(60, 1), Format.MOV, Codec.H264, null);
+				ScreenshotQueue.encoder = new SequenceEncoder(NIOUtils.writableChannel(movie), Rational.R(60, 1), Format.MOV, Codec.H264, null);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -92,11 +119,12 @@ public class RecordCommand extends CommandBase {
 					while (true) {
 						synchronized (ScreenshotQueue.toConvert) {
 							if (ScreenshotQueue.toConvert.size() != 0) {
-								final WorkImage job = ScreenshotQueue.toConvert.poll();
+								ByteBuffer buffer = ScreenshotQueue.toConvert.poll();
 								try {
-									ScreenshotUtils.saveScreenshot(job);
+									ScreenshotUtils.saveScreenshot(buffer);
 								} catch (IOException e) {
 									e.printStackTrace();
+									
 								}
 							}
 						}
@@ -110,18 +138,13 @@ public class RecordCommand extends CommandBase {
 				public void run() {
 					
 					if (Minecraft.getMinecraft().currentScreen == null) {
-						ScreenshotQueue.toRecord.add(TASRecorder.currentFrame);
-						TASRecorder.currentFrame++;
-					}
-					else if (allowed.contains(Minecraft.getMinecraft().currentScreen.getClass().getSimpleName().toLowerCase())) {
-						ScreenshotQueue.toRecord.add(TASRecorder.currentFrame);
-						TASRecorder.currentFrame++;
+						ScreenshotQueue.toRecord++;
+					} else if (allowed.contains(Minecraft.getMinecraft().currentScreen.getClass().getSimpleName().toLowerCase())) {
+						ScreenshotQueue.toRecord++;
 					}
 				}
 			};
-			ScreenshotQueue.scheduler.scheduleAtFixedRate(ScreenshotQueue.workerTask, 0L, Math.round(1000 / (TickrateChanger.TICKS_PER_SECOND * 3)));
-			
-			TASRecorder.currentFrame = 0;
+			ScreenshotQueue.scheduler.scheduleAtFixedRate(ScreenshotQueue.workerTask, 16L, Math.round(1000 / 3));
 			
 			TASRecorder.isRecording = true;
 			sender.sendMessage(new TextComponentString("You have started the Recording"));

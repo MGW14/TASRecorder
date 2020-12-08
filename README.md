@@ -1,24 +1,19 @@
-# TASRecorder
+# TASRecorder 1.12.2
 The TASRecorder Mod is an addition to the TASTickratechanger by <a href="https://github.com/ScribbleLP/TASTickratechanger">@ScribbleLP</a>.
 It records at 60 fps depending on your Tickrate and then speeds it up without the use of an Video Editing software.
 
-I will have to add Sound later
+This does not support Sound!
 
-<h3>This requires FFMpeg</h3>
-You have to put <a href="https://github.com/BtbN/FFmpeg-Builds/releases">ffmpeg gpl</a> to your Documents Folder
-<img src="https://i.ibb.co/QcCzywx/image.png"></img>
 <h3>How to install</h3>
-Download Gradle or the Gradle Wrapper and run the task "shadow"
+Download the newest **Pre-Release** from the Releases Page. (warning: releases below 1.2.1 require ffmpeg!)
+Linux, Mac and Windows compatible
 <h3>How to use</h3>
-Once you are in your world, set the default tickrate and then set the quality of your TAS-Video by using /quality (low-ultra)
-Quality Settings basically just set the bitrate of ffmpeg. I recommend Medium for Lower-End PC's and Low for short/8mb tas files.
-
-Then type in /record to start the recording.
-It will not record the Main Menu, but will automatically start after you join a world again.
-
-While you are in the TAS, press ESC a few times, and all the images will be compressed.
-That means, you will not have 1.5tb of images after an all advancements run (it's actually "only" 350 gb but still) and it will compress it down to... uhhh 15 gb? idunno.
-
-Type /record again to stop recording.
-
-Now you just need to run /generate and your Tas will appear under Documents/ffmpeg.
+In your world, run the command /record, to start the recording. This will automatically set your tickrate to 1
+Run the command again, and it will stop the recording.
+<h6>Note: This mod only works on Tickrate 1 atm</h6>
+The Generated File will be under Videos.
+<h3>Dev Note</h3>
+Because you have to use the Pre-Release to get a good Video, please restart your MC after every recording.
+This Text will disappear once it is fixed!
+<h3>Dependencies</h3>
+Install <a href="https://github.com/ScribbleLP/TASTickratechanger">TASTickrateChanger</a>!

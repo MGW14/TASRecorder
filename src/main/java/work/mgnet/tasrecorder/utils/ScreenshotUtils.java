@@ -4,20 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import javax.swing.filechooser.FileSystemView;
-
 import org.jcodec.common.model.ColorSpace;
 import org.jcodec.common.model.Picture;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 import work.mgnet.tasrecorder.ScreenshotQueue;
-import work.mgnet.tasrecorder.ScreenshotQueue.WorkImage;
 
 public class ScreenshotUtils {
 
-	public static final File screenshotDir = new File(
-			FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + "/ffmpeg");
+	public static final File videosFolder = new File(System.getenv("userprofile"), "Videos");
 
 	public static int width;
 	public static int height;
@@ -36,19 +32,16 @@ public class ScreenshotUtils {
 		return buffer;
 	}
 
-	public static void saveScreenshot(WorkImage img) throws IOException {
+	public static void saveScreenshot(ByteBuffer buffer) throws IOException {
 		if (ScreenshotQueue.toConvert.size() != 0) System.out.println("Pending: " + ScreenshotQueue.toConvert.size());
-		Picture pic = Picture.create(1920, 1080, ColorSpace.RGB);
+		Picture pic = Picture.create(width, height, ColorSpace.RGB);
 		
 		byte[] dstData = pic.getPlaneData(0);
 		
-		ByteBuffer buffer = img.buffer;
-
-		
         int j = 0;
-        for (int y = 1079; y > 0; y--) {
-            for (int x = 0; x < 1920; x++) {
-                int i = (x + (1920 * y)) * 3;
+        for (int y = (height - 1); y > 0; y--) {
+            for (int x = 0; x < width; x++) {
+                int i = (x + (width * y)) * 3;
                 
                 dstData[j++] = 
                 		(byte) (buffer.get(i) - 128);
@@ -61,7 +54,9 @@ public class ScreenshotUtils {
         }
         
         try {
-        	ScreenshotQueue.encoder.encodeNativeFrame(pic);
+        	synchronized (ScreenshotQueue.encoder) {
+        		ScreenshotQueue.encoder.encodeNativeFrame(pic);
+			}
         } catch (Exception e) {
 			
 		}
