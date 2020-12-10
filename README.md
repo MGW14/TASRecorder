@@ -5,7 +5,7 @@ It records at 60 fps depending on your Tickrate and then speeds it up without th
 This does not support Sound!
 
 <h3>How to install</h3>
-Download the newest **Pre-Release** from the Releases Page. (warning: releases below 1.2.1 require ffmpeg!)
+Download the newest Release from the Releases Page. (warning: releases below 1.2.1 require ffmpeg!)
 Linux, Mac and Windows compatible
 <h3>How to use</h3>
 In your world, run the command /record, to start the recording. This will automatically set your tickrate to 1
