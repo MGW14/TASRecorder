@@ -1,5 +1,6 @@
 # TASRecorder 1.12.2
-The TASRecorder Mod is an addition to the TASTickratechanger by <a href="https://github.com/ScribbleLP/TASTickratechanger">@ScribbleLP</a>.
+The TASRecorder Mod is an addition to the TASTickratechanger and TASTools by <a href="https://github.com/ScribbleLP">@ScribbleLP</a>.
+Download BOTH of them
 It records at 60 fps depending on your Tickrate and then speeds it up without the use of an Video Editing software.
 
 This does not support Sound!

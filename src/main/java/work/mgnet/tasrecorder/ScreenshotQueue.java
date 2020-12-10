@@ -31,6 +31,7 @@ public class ScreenshotQueue {
 	
 	public static boolean isRecording = false;
 	public static boolean freeMemory = false;
+	public static boolean shouldRestart = false;
 	
 	public static Thread workedThread;
 	
@@ -51,6 +52,7 @@ public class ScreenshotQueue {
 		isRecording = true;
 		
 		TickrateAPI.changeTickrate(1.0f);
+		TickrateAPI.changeDefaultTickrate(1.0f, true);
 				
 		ScreenshotQueue.scheduler = new Timer();
 		ScreenshotQueue.workedThread = new Thread(new Runnable() {
@@ -82,12 +84,15 @@ public class ScreenshotQueue {
 						}
 					}
 				}
+				System.out.println(System.currentTimeMillis());
 				try {
 					encoder.finish();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 				freeMemory = true;
+				scheduler.cancel();
+				startRecording();
 			}
 		});
 		ScreenshotQueue.workedThread.start();
