@@ -9,8 +9,6 @@ import org.jcodec.common.model.Picture;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
-import work.mgnet.tasrecorder.ScreenshotQueue;
-
 public class ScreenshotUtils {
 
 	public static final File videosFolder = new File(System.getenv("userprofile"), "Videos");
@@ -32,8 +30,7 @@ public class ScreenshotUtils {
 		return buffer;
 	}
 
-	public static void saveScreenshot(ByteBuffer buffer) throws IOException {
-		if (ScreenshotQueue.toConvert.size() != 0) System.out.println("Pending: " + ScreenshotQueue.toConvert.size());
+	public static Picture saveScreenshot(ByteBuffer buffer) throws IOException {
 		Picture pic = Picture.create(width, height, ColorSpace.RGB);
 		
 		byte[] dstData = pic.getPlaneData(0);
@@ -52,15 +49,7 @@ public class ScreenshotUtils {
                 
             }
         }
-        
-        try {
-        	synchronized (ScreenshotQueue.encoder) {
-        		ScreenshotQueue.encoder.encodeNativeFrame(pic);
-			}
-        } catch (Exception e) {
-			
-		}
-        
+        return pic;
 	}
 
 }

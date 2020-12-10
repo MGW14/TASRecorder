@@ -19,7 +19,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
 
-version = "1.0"
+version = "1.3"
 group = "work.mgnet.tasrecorder"
 archivesBaseName = "tasrecorder"
 
@@ -97,11 +97,15 @@ shadowJar {
 
     dependsOn reobfJar
 	
-	exclude(['me/**'])
+	exclude(['de/scribble/lp/TASTools/**'])
+	exclude(['META-INF/tastools_at.cfg'])
+	exclude(['mixins.tastools.json'])
+	exclude(['mixins.tastools.refmap.json'])
+	
+		exclude(['me/**'])
 	exclude(['META-INF/tastickratechanger_at.cfg'])
 	exclude(['mixins.ticks.json'])
 	exclude(['mixins.ticks.refmap.json'])
-	
 	
     configurations = [project.configurations.compile]
     classifier "shadow"

@@ -16,10 +16,14 @@ public class MixinEntityRenderer {
 	
 	@Inject(method = "updateCameraAndRender", at = @At(value="TAIL"), cancellable = true)
 	public void redoupdateCameraAndRender(CallbackInfo ci) {
-		if (ScreenshotQueue.toRecord > 0) {
+		if (ScreenshotQueue.toRecord > 0 && ScreenshotQueue.isRecording) {
 			ScreenshotQueue.toRecord--;
 			ByteBuffer bytes = ScreenshotUtils.takeScreenshot();
 			ScreenshotQueue.toConvert.add(bytes);
+		}
+		if (ScreenshotQueue.freeMemory) {
+			System.gc();
+			ScreenshotQueue.freeMemory = false;
 		}
 	 }
 	

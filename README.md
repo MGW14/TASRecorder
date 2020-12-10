@@ -12,8 +12,5 @@ In your world, run the command /record, to start the recording. This will automa
 Run the command again, and it will stop the recording.
 <h6>Note: This mod only works on Tickrate 1 atm</h6>
 The Generated File will be under Videos.
-<h3>Dev Note</h3>
-Because you have to use the Pre-Release to get a good Video, please restart your MC after every recording.
-This Text will disappear once it is fixed!
 <h3>Dependencies</h3>
 Install <a href="https://github.com/ScribbleLP/TASTickratechanger">TASTickrateChanger</a>!
